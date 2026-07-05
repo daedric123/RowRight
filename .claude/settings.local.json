@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/sebrenkey/.nvm/**)",
+      "Read(//Users/sebrenkey/.volta/**)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(command -v node)",
+      "Bash(grep -rn -e eyJhbGci -e 'sk_test_\\\\|sk_live_' -e whsec_ -e 'price_[A-Za-z0-9]\\\\{10,\\\\}' -e 'supabase\\\\.co' -e service_role -e 'anon.*key\\\\|anonKey' -e 'password\\\\s*=\\\\s*['\\\\''\"][^'\\\\''\"]\\\\+['\\\\''\"]' -e 'api_key\\\\s*=\\\\s*['\\\\''\"][^'\\\\''\"]\\\\+['\\\\''\"]' -e 'secret\\\\s*=\\\\s*['\\\\''\"][^'\\\\''\"]\\\\+['\\\\''\"]' '/Users/sebrenkey/Claude projects/RowRight/src/' '/Users/sebrenkey/Claude projects/RowRight/netlify/' '/Users/sebrenkey/Claude projects/RowRight/supabase/' '/Users/sebrenkey/Claude projects/RowRight/public/')",
+      "Bash(npx vite *)"
+    ]
+  }
+}

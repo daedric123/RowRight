@@ -1,0 +1,2533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RowRight</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ---------- TWEAKABLE TOKENS ---------- */
+  :root {
+    --bg: #0B0B0E;
+    --bg-1: #111114;
+    --bg-2: #16161B;
+    --bg-3: #1D1D23;
+    --line: #24242C;
+    --line-2: #2E2E38;
+    --fg: #F2F2F0;
+    --fg-2: #B5B5B0;
+    --fg-3: #76767A;
+    --fg-4: #4A4A50;
+
+    --accent: oklch(0.72 0.18 25);
+    --accent-dim: oklch(0.72 0.18 25 / 0.12);
+    --accent-fg: #0B0B0E;
+
+    --good: oklch(0.78 0.14 155);
+    --bad: oklch(0.68 0.20 20);
+
+    --radius: 10px;
+    --radius-sm: 6px;
+    --pad: 20px;
+    --gap: 16px;
+
+    --sans: 'Inter Tight', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  /* density modes */
+  [data-density="compact"] { --pad: 14px; --gap: 10px; }
+  [data-density="spacious"] { --pad: 28px; --gap: 22px; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--sans);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body { overflow-x: hidden; min-height: 100vh; }
+  input, button, select, textarea {
+    outline: none;
+    font-family: inherit;
+    color: inherit;
+  }
+  input::placeholder { color: var(--fg-4); }
+  button { cursor: pointer; border: none; background: none; }
+
+  /* typography helpers */
+  .mono { font-family: var(--mono); font-feature-settings: "ss01", "cv01", "zero"; }
+  .eyebrow {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--fg-3);
+  }
+  .eyebrow .dot {
+    display: inline-block;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-right: 8px;
+    vertical-align: middle;
+    translate: 0 -1px;
+  }
+
+  /* layout shell */
+  .shell {
+    max-width: 1360px;
+    margin: 0 auto;
+    padding: 28px 32px 80px;
+  }
+
+  /* TOPBAR */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0 28px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 28px;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .mark {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: var(--fg);
+    color: var(--bg);
+    display: grid; place-items: center;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: -0.03em;
+    position: relative;
+  }
+  .mark::after {
+    content: "";
+    position: absolute;
+    right: -3px; bottom: -3px;
+    width: 10px; height: 10px;
+    border-radius: 3px;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+  }
+  .brand-name {
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.02em;
+  }
+  .brand-name span { color: var(--fg-3); font-weight: 400; }
+  .topbar-right {
+    display: flex; align-items: center; gap: 20px;
+    font-size: 12px;
+    color: var(--fg-3);
+  }
+  .topbar-right .status {
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+  .pulse {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--good);
+    box-shadow: 0 0 0 0 var(--good);
+    animation: pulse 2.4s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 oklch(0.78 0.14 155 / 0.5); }
+    70% { box-shadow: 0 0 0 8px oklch(0.78 0.14 155 / 0); }
+    100% { box-shadow: 0 0 0 0 oklch(0.78 0.14 155 / 0); }
+  }
+
+  /* HERO BANNER */
+  .hero {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 28px;
+    margin-bottom: 32px;
+    align-items: end;
+  }
+  .hero h1 {
+    font-size: clamp(56px, 9vw, 128px);
+    line-height: 0.88;
+    letter-spacing: -0.045em;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+  .hero h1 .slash { color: var(--accent); font-weight: 300; }
+  .hero h1 em {
+    display: block;
+    font-style: normal;
+    color: var(--fg-3);
+    font-family: inherit;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.22em;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-top: 6px;
+  }
+  .hero-meta {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding-bottom: 4px;
+  }
+  .meta-cell { border-top: 1px solid var(--line); padding-top: 14px; }
+  .meta-cell .k {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fg-3);
+    margin-bottom: 6px;
+  }
+  .meta-cell .v {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 32px;
+    position: relative;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 14px 0;
+    margin-right: 32px;
+    color: var(--fg-3);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    position: relative;
+    white-space: nowrap;
+    transition: color 0.15s;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .tab:hover { color: var(--fg-2); }
+  .tab.active { color: var(--fg); }
+  .tab.active::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: -1px;
+    height: 1px;
+    background: var(--accent);
+  }
+  .tab .num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--fg-4);
+  }
+  .tab.active .num { color: var(--accent); }
+
+  /* PANELS / CARDS */
+  .card {
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--pad);
+    border-bottom: 1px solid var(--line);
+  }
+  .card-head h3 {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+  .card-body { padding: var(--pad); }
+
+  /* HERO TILES (predictor) */
+  .predictor-hero {
+    display: grid;
+    grid-template-columns: 1.2fr 1.4fr 1fr;
+    gap: var(--gap);
+    margin-bottom: var(--gap);
+  }
+  .tile {
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: var(--pad);
+    display: flex;
+    flex-direction: column;
+    min-height: 220px;
+  }
+  .tile .eyebrow { margin-bottom: 18px; }
+  .tile.lead {
+    background: var(--bg-1);
+    color: var(--fg);
+    border-color: var(--line);
+  }
+  .tile.lead .eyebrow { color: var(--fg-3); }
+  .tile.lead .eyebrow .dot { background: var(--accent); }
+  .tile.lead .hero-time { color: var(--fg); }
+  .tile.lead .hero-time .punct { color: var(--accent); font-weight: 300; }
+
+  .hero-time {
+    font-family: var(--mono);
+    font-size: clamp(56px, 8vw, 96px);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    font-weight: 500;
+    margin: auto 0 8px;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+  .hero-time .ms {
+    font-size: 0.4em;
+    color: var(--fg-3);
+    font-weight: 400;
+  }
+  .tile.lead .hero-time .ms { color: var(--fg-3); }
+  .hero-sub {
+    font-size: 12px;
+    color: var(--fg-3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tile.lead .hero-sub { color: var(--fg-3); }
+  .hero-sub .chip {
+    padding: 2px 8px;
+    border-radius: 3px;
+    background: var(--accent);
+    color: var(--accent-fg);
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+  }
+
+  /* graph */
+  .graph-wrap { position: relative; flex: 1; min-height: 180px; }
+  .graph-wrap canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+  }
+  .graph-hint {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--fg-4);
+    margin-top: 10px;
+    letter-spacing: 0.02em;
+  }
+
+  /* split strip */
+  .strip { display: flex; flex-direction: column; gap: 2px; margin: auto 0; }
+  .strip-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--line);
+  }
+  .strip-row:last-child { border: none; }
+  .strip-row .d {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--fg-3);
+  }
+  .strip-row .t {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+  .strip-row.hl .t { color: var(--accent); }
+
+  /* SECONDARY PANELS */
+  .row-2 {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: var(--gap);
+  }
+  .points-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .points-list::-webkit-scrollbar { width: 4px; }
+  .points-list::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 2px; }
+  .point-row {
+    display: grid;
+    grid-template-columns: 70px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 12px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+  }
+  .point-row:hover { border-color: var(--line-2); }
+  .point-row .dist {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--fg-3);
+  }
+  .point-row input {
+    background: transparent;
+    border: none;
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--fg);
+    width: 100%;
+    padding: 4px 0;
+    border-bottom: 1px solid transparent;
+  }
+  .point-row input:focus { border-bottom-color: var(--accent); }
+  .point-row .rm {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--fg-4);
+    padding: 4px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.06em;
+  }
+  .point-row .rm:hover { color: var(--bad); background: oklch(0.68 0.20 20 / 0.1); }
+
+  .add-point {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+  .add-point input {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+  .add-point input:focus { border-color: var(--accent); }
+
+  /* BUTTONS */
+  .btn {
+    padding: 11px 18px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--line-2);
+    background: var(--bg-2);
+    color: var(--fg);
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn:hover { background: var(--bg-3); border-color: var(--fg-4); }
+  .btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-fg);
+  }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn.ghost { background: transparent; border-color: var(--line); color: var(--fg-3); }
+  .btn.ghost:hover { color: var(--fg); border-color: var(--line-2); }
+  .btn.sm { padding: 7px 12px; font-size: 11px; }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* PROFILES */
+  .profiles {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .profile-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 10px;
+    padding: 12px 14px;
+    align-items: center;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+  }
+  .profile-item .name { font-size: 13px; font-weight: 500; }
+  .profile-item .time { font-family: var(--mono); font-size: 11px; color: var(--fg-3); margin-top: 2px; }
+  .profile-item .mini {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 5px 9px;
+    border-radius: 3px;
+    background: transparent;
+    color: var(--fg-3);
+    border: 1px solid var(--line);
+  }
+  .profile-item .mini:hover { color: var(--fg); border-color: var(--line-2); }
+  .profile-item .mini.del:hover { color: var(--bad); border-color: var(--bad); }
+
+  /* CALCULATOR MODE */
+  .calc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: var(--gap);
+  }
+  .field { margin-bottom: 18px; }
+  .field label {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fg-3);
+    margin-bottom: 8px;
+  }
+  .field input, .field select {
+    width: 100%;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    font-size: 15px;
+    color: var(--fg);
+    transition: border 0.15s;
+  }
+  .field .mono-input { font-family: var(--mono); font-size: 18px; letter-spacing: -0.01em; }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+  .field select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' stroke='%2376767A' stroke-width='1.5' fill='none' stroke-linecap='round'/></svg>"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 40px; }
+
+  .result-big {
+    font-family: var(--mono);
+    font-size: clamp(48px, 7vw, 84px);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    font-weight: 500;
+    margin: 8px 0 4px;
+  }
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    margin-top: 20px;
+    overflow: hidden;
+  }
+  .result-cell {
+    background: var(--bg-1);
+    padding: 16px;
+  }
+  .result-cell .k {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fg-3);
+    margin-bottom: 6px;
+  }
+  .result-cell .v {
+    font-family: var(--mono);
+    font-size: 22px;
+    letter-spacing: -0.02em;
+    font-weight: 500;
+  }
+
+  /* WATT MODE */
+  .watt-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gap);
+  }
+  .watt-main {
+    grid-column: span 2;
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: center;
+  }
+  .watt-input-area { display: flex; flex-direction: column; gap: 20px; }
+  .watt-toggle {
+    display: flex;
+    padding: 3px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    width: fit-content;
+  }
+  .watt-toggle button {
+    padding: 8px 18px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--fg-3);
+    border-radius: 4px;
+    font-family: var(--mono);
+  }
+  .watt-toggle button.active {
+    background: var(--fg);
+    color: var(--bg);
+  }
+  .watt-big-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    padding: 8px 0 16px;
+    font-family: var(--mono);
+    font-size: clamp(48px, 7vw, 72px);
+    font-weight: 500;
+    letter-spacing: -0.04em;
+    color: var(--fg);
+    width: 100%;
+  }
+  .watt-big-input:focus { border-bottom-color: var(--accent); }
+  .watt-unit {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--fg-3);
+    letter-spacing: 0.04em;
+  }
+  .watt-output { text-align: left; }
+  .watt-output .eyebrow { margin-bottom: 18px; }
+  .watt-out-big {
+    font-family: var(--mono);
+    font-size: clamp(64px, 9vw, 108px);
+    line-height: 0.88;
+    letter-spacing: -0.045em;
+    font-weight: 500;
+    color: var(--accent);
+  }
+  .watt-out-unit {
+    color: var(--fg-3);
+    font-size: 14px;
+    font-family: var(--mono);
+    margin-top: 4px;
+  }
+  .watt-reference {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+  }
+  .watt-reference .rlabel {
+    font-size: 11px;
+    color: var(--fg-3);
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+  .watt-bar {
+    position: relative;
+    height: 2px;
+    background: var(--line);
+    margin: 20px 0;
+  }
+  .watt-bar-fill {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    background: var(--accent);
+    transition: width 0.4s cubic-bezier(.2,.8,.2,1);
+  }
+  .watt-marks {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--fg-4);
+  }
+  .watt-marks .m { text-align: center; }
+  .watt-marks .m span { display: block; color: var(--fg-3); margin-top: 3px; }
+  .watt-tiers {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    margin-top: 20px;
+    overflow: hidden;
+  }
+  .tier {
+    background: var(--bg-2);
+    padding: 14px;
+    position: relative;
+  }
+  .tier.active {
+    background: var(--accent-dim);
+  }
+  .tier .tname {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-3);
+    margin-bottom: 4px;
+  }
+  .tier.active .tname { color: var(--accent); }
+  .tier .trange {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--fg);
+  }
+  .tier .tpace {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--fg-4);
+    margin-top: 2px;
+  }
+
+  /* SURVEY */
+  .survey-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--gap);
+    margin-bottom: var(--gap);
+  }
+  .uni-card {
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 0;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border 0.2s, transform 0.2s;
+    position: relative;
+  }
+  .uni-card:hover { border-color: var(--line-2); }
+  .uni-card.selected {
+    border-color: var(--accent);
+  }
+  .uni-card.selected::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    box-shadow: inset 0 0 0 1px var(--accent);
+    border-radius: var(--radius);
+  }
+  .uni-preview {
+    aspect-ratio: 1;
+    position: relative;
+    display: grid;
+    place-items: center;
+    background: var(--bg-2);
+    overflow: hidden;
+  }
+  .uni-preview svg { width: 70%; height: 70%; }
+  .uni-meta {
+    padding: 18px;
+    border-top: 1px solid var(--line);
+  }
+  .uni-meta .name {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+  }
+  .uni-meta .desc {
+    font-size: 12px;
+    color: var(--fg-3);
+    line-height: 1.5;
+  }
+  .uni-meta .badge {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 3px 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    background: var(--bg-3);
+    color: var(--fg-3);
+    border-radius: 3px;
+    letter-spacing: 0.04em;
+  }
+  .uni-card.selected .uni-meta .badge {
+    background: var(--accent);
+    color: var(--accent-fg);
+  }
+  .survey-result-card { padding: 18px; border-top: 1px solid var(--line); }
+  .vote-row { margin-bottom: 14px; }
+  .vote-row:last-child { margin-bottom: 0; }
+  .vote-head {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+  .vote-head .n { font-family: var(--mono); color: var(--fg-3); }
+  .vote-bar {
+    height: 3px;
+    background: var(--line);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .vote-bar-fill {
+    height: 100%;
+    background: var(--fg-3);
+    transition: width 0.6s cubic-bezier(.2,.8,.2,1);
+  }
+  .vote-row.win .vote-bar-fill { background: var(--accent); }
+
+  /* SAVE DIALOG */
+  .modal-back {
+    position: fixed; inset: 0;
+    background: rgba(8,8,10, 0.7);
+    backdrop-filter: blur(6px);
+    display: grid; place-items: center;
+    z-index: 2000;
+  }
+  .modal {
+    background: var(--bg-1);
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius);
+    padding: 28px;
+    max-width: 440px;
+    width: 92%;
+  }
+  .modal h2 { font-size: 20px; font-weight: 600; letter-spacing: -0.015em; margin-bottom: 18px; }
+  .modal input {
+    width: 100%;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-size: 14px;
+    color: var(--fg);
+    margin-bottom: 16px;
+  }
+  .modal input:focus { border-color: var(--accent); }
+
+  /* TOOLTIP (drag) */
+  .drag-tip {
+    position: fixed;
+    pointer-events: none;
+    background: var(--fg);
+    color: var(--bg);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    font-family: var(--mono);
+    font-size: 12px;
+    transform: translate(-50%, -140%);
+    z-index: 1500;
+    white-space: nowrap;
+  }
+  .drag-tip .d { font-size: 10px; color: var(--fg-3); margin-bottom: 2px; }
+
+  /* TWEAKS PANEL */
+  .tweaks-panel {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 260px;
+    background: var(--bg-1);
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    z-index: 1800;
+    display: none;
+  }
+  .tweaks-panel.open { display: block; }
+  .tweaks-panel h4 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    color: var(--fg-3);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .tweaks-panel h4 .close {
+    width: 20px; height: 20px; border-radius: 4px;
+    background: var(--bg-2); color: var(--fg-3);
+    display: grid; place-items: center;
+    font-size: 14px;
+  }
+  .tweak-row { margin-bottom: 14px; }
+  .tweak-row:last-child { margin-bottom: 0; }
+  .tweak-row .tlabel {
+    font-size: 11px;
+    color: var(--fg-3);
+    margin-bottom: 8px;
+    display: flex; justify-content: space-between;
+  }
+  .tweak-row .tlabel .val {
+    font-family: var(--mono);
+    color: var(--fg);
+  }
+  .accent-swatches {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+  }
+  .sw {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    position: relative;
+  }
+  .sw.active { border-color: var(--fg); }
+  .density-pick {
+    display: flex;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 2px;
+  }
+  .density-pick button {
+    flex: 1;
+    padding: 7px;
+    font-size: 11px;
+    color: var(--fg-3);
+    border-radius: 3px;
+  }
+  .density-pick button.active {
+    background: var(--fg);
+    color: var(--bg);
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; }
+    .predictor-hero { grid-template-columns: 1fr; }
+    .row-2 { grid-template-columns: 1fr; }
+    .calc-grid { grid-template-columns: 1fr; }
+    .watt-main { grid-template-columns: 1fr; padding: 24px; }
+    .shell { padding: 20px; }
+    .trailer-grid {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "dim"
+        "stage"
+        "boats";
+    }
+    .trailer-controls-top .card-head h3 { font-size: 11px; }
+    .trailer-controls-top .card-body { padding: 10px 12px; }
+    .trailer-controls-top .dim-controls { gap: 8px; margin-bottom: 10px; }
+    .trailer-controls-top .stepper { grid-template-columns: 28px 1fr 28px; }
+    .trailer-controls-top .stepper button { height: 30px; font-size: 14px; }
+    .trailer-controls-top .stepper .num { font-size: 14px; }
+  }
+
+  /* TRAILER LOADER */
+  .trailer-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    grid-template-areas:
+      "dim stage"
+      "boats stage";
+    gap: var(--gap);
+  }
+  .trailer-controls-top { grid-area: dim; align-self: start; }
+  .trailer-controls-bottom { grid-area: boats; }
+  .trailer-stage { grid-area: stage; }
+  .dim-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .dim-ctrl { }
+  .dim-ctrl .dlabel {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fg-3);
+    margin-bottom: 8px;
+  }
+  .stepper {
+    display: grid;
+    grid-template-columns: 36px 1fr 36px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  .stepper button {
+    background: transparent;
+    color: var(--fg-3);
+    font-family: var(--mono);
+    font-size: 18px;
+    height: 40px;
+  }
+  .stepper button:hover { color: var(--accent); background: var(--bg-3); }
+  .stepper .num {
+    display: grid; place-items: center;
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--fg);
+    border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+  }
+  .add-boat-row {
+    display: grid;
+    grid-template-columns: 1fr 70px auto;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .add-boat-row input, .add-boat-row select {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--fg);
+  }
+  .add-boat-row input:focus, .add-boat-row select:focus { border-color: var(--accent); }
+  .add-boat-row select {
+    font-family: var(--mono);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' stroke='%2376767A' stroke-width='1.5' fill='none' stroke-linecap='round'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 24px;
+  }
+  .boat-pool {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 60px;
+    padding: 12px;
+    background: var(--bg-2);
+    border: 1px dashed var(--line-2);
+    border-radius: var(--radius-sm);
+  }
+  .boat-pool.empty::before {
+    content: "No boats yet — add one above.";
+    color: var(--fg-4);
+    font-size: 12px;
+    font-style: italic;
+    align-self: center;
+    margin: auto;
+  }
+  .bubble {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px 8px 10px;
+    background: var(--bg-3);
+    border: 1px solid var(--line-2);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--fg);
+    cursor: grab;
+    user-select: none;
+    transition: transform 0.15s, border-color 0.15s, background 0.15s;
+    max-width: 100%;
+  }
+  .bubble:hover { border-color: var(--accent); }
+  .bubble.dragging { opacity: 0.4; cursor: grabbing; }
+  .bubble .tag {
+    display: inline-grid;
+    place-items: center;
+    min-width: 26px; height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--accent-fg);
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .bubble .x {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--fg-4);
+    margin-left: 4px;
+    cursor: pointer;
+    padding: 0 2px;
+  }
+  .bubble .x:hover { color: var(--bad); }
+
+  .trailer-stage {
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: var(--pad);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .trailer-viz {
+    position: relative;
+    padding: 28px 24px;
+    background:
+      repeating-linear-gradient(90deg, transparent 0 22px, rgba(118, 118, 122, 0.04) 22px 24px),
+      var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  .trailer-axle {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--fg-4);
+    letter-spacing: 0.08em;
+    margin-bottom: 14px;
+  }
+  .trailer-grid-cells {
+    display: grid;
+    gap: 8px;
+    aspect-ratio: auto;
+  }
+  .cell {
+    aspect-ratio: 2.4 / 1;
+    border: 1px dashed var(--line-2);
+    border-radius: 6px;
+    background: var(--bg-1);
+    display: grid;
+    place-items: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--fg-4);
+    position: relative;
+    transition: all 0.15s;
+    cursor: pointer;
+    padding: 6px;
+    text-align: center;
+    overflow: hidden;
+  }
+  .cell.drop-hover {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+    color: var(--accent);
+    border-style: solid;
+  }
+  .cell.filled {
+    background: var(--bg-3);
+    border: 1px solid var(--line-2);
+    border-style: solid;
+    color: var(--fg);
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: grab;
+  }
+  .cell.stacked { aspect-ratio: 2.4 / 1.7; padding: 20px 6px 6px; }
+  .cell-boats {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    align-items: stretch;
+    justify-content: center;
+  }
+  .cell-boat {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    cursor: grab;
+    transition: border-color 0.15s;
+    min-height: 22px;
+  }
+  .cell-boat:hover { border-color: var(--accent); }
+  .cell-boat:active { cursor: grabbing; }
+  .cell-boat .cell-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--fg);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .cell.filled:hover { border-color: var(--accent); }
+  .cell.filled .cell-tag {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .cell .coord {
+    position: absolute;
+    top: 4px; left: 6px;
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--fg-4);
+    opacity: 0.6;
+  }
+  .cell.filled .coord { color: var(--fg-3); }
+  .trailer-legend {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--fg-4);
+    letter-spacing: 0.08em;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+  .trailer-legend .filled-count {
+    color: var(--accent);
+  }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+
+
+
+
+const { useState, useRef, useEffect, useCallback, useMemo } = React;
+
+// ---------- TWEAKS ----------
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accentHue": 25,
+  "density": "cozy"
+}/*EDITMODE-END*/;
+
+// ---------- UTILS ----------
+const splitToSeconds = (split) => {
+  if (typeof split === 'number') return split;
+  if (split.includes(':')) {
+    const [m, s] = split.split(':');
+    return parseInt(m) * 60 + parseFloat(s);
+  }
+  return parseFloat(split);
+};
+const secondsToSplit = (seconds) => {
+  const m = Math.floor(seconds / 60);
+  const s = (seconds % 60).toFixed(1);
+  return `${m}:${s.padStart(4, '0')}`;
+};
+const fmtTime = (sec) => {
+  const m = Math.floor(sec / 60);
+  const s = (sec % 60).toFixed(1);
+  return `${m}:${s.padStart(4, '0')}`;
+};
+
+// ---------- APP ----------
+const App = () => {
+  const [mode, setMode] = useState('predictor');
+
+  // Predictor
+  const [splitPoints, setSplitPoints] = useState([
+  { distance: 0, split: '1:45' },
+  { distance: 500, split: '1:45' },
+  { distance: 1000, split: '1:45' },
+  { distance: 1500, split: '1:45' },
+  { distance: 2000, split: '1:45' }]
+  );
+  const [newSplitDistance, setNewSplitDistance] = useState('');
+  const [draggedPoint, setDraggedPoint] = useState(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0, visible: false, distance: 0, split: '' });
+  const [savedProfiles, setSavedProfiles] = useState([]);
+  const [profileName, setProfileName] = useState('');
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const canvasRef = useRef(null);
+
+  // Split calculator
+  const [distance, setDistance] = useState('2000');
+  const [totalTime, setTotalTime] = useState('');
+  const [customDistance, setCustomDistance] = useState('');
+  const [splits, setSplits] = useState(null);
+
+  // Watt calculator
+  const [wattMode, setWattMode] = useState('split-to-watts'); // or watts-to-split
+  const [wattSplitInput, setWattSplitInput] = useState('1:45.0');
+  const [wattsInput, setWattsInput] = useState('300');
+
+  // Survey
+  const [selectedDesign, setSelectedDesign] = useState(null);
+  const [hasVoted, setHasVoted] = useState(false);
+  const [votes, setVotes] = useState({ design1: 12, design2: 8, design3: 15, design4: 4 });
+
+  // Trailer loader
+  const [trailerRows, setTrailerRows] = useState(4);
+  const [trailerCols, setTrailerCols] = useState(3);
+  const [boats, setBoats] = useState([
+  { id: 'b1', name: 'Varsity 8+', type: '8+' },
+  { id: 'b2', name: 'Novice 4+', type: '4+' },
+  { id: 'b3', name: 'Lightweight 2x', type: '2x' },
+  { id: 'b4', name: 'Single', type: '1x' }]
+  );
+  const [placements, setPlacements] = useState({}); // { "row-col": boatId }
+  const [newBoatName, setNewBoatName] = useState('');
+  const [newBoatType, setNewBoatType] = useState('8+');
+  const [draggedBoat, setDraggedBoat] = useState(null);
+  const [dragOverCell, setDragOverCell] = useState(null);
+  const [trailerProfiles, setTrailerProfiles] = useState([]);
+  const [showTrailerSaveDialog, setShowTrailerSaveDialog] = useState(false);
+  const [trailerProfileName, setTrailerProfileName] = useState('');
+
+  // Tweaks
+  const [tweaks, setTweaks] = useState(TWEAK_DEFAULTS);
+  const [tweaksOpen, setTweaksOpen] = useState(false);
+
+  // ---------- TWEAK HOST PROTOCOL ----------
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.data?.type === '__activate_edit_mode') setTweaksOpen(true);else
+      if (e.data?.type === '__deactivate_edit_mode') setTweaksOpen(false);
+    };
+    window.addEventListener('message', handler);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
+  // Apply tweaks to root
+  useEffect(() => {
+    document.documentElement.setAttribute('data-density', tweaks.density);
+    document.documentElement.style.setProperty('--accent', `oklch(0.72 0.18 ${tweaks.accentHue})`);
+    document.documentElement.style.setProperty('--accent-dim', `oklch(0.72 0.18 ${tweaks.accentHue} / 0.12)`);
+  }, [tweaks]);
+
+  const updateTweak = (key, val) => {
+    const next = { ...tweaks, [key]: val };
+    setTweaks(next);
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [key]: val } }, '*');
+  };
+
+  // ---------- PREDICTOR CALC ----------
+  const predicted2k = useMemo(() => {
+    const sorted = [...splitPoints].sort((a, b) => a.distance - b.distance);
+    let total = 0;
+    for (let i = 0; i < sorted.length - 1; i++) {
+      const dd = sorted[i + 1].distance - sorted[i].distance;
+      const s1 = splitToSeconds(sorted[i].split);
+      const s2 = splitToSeconds(sorted[i + 1].split);
+      const avg = (s1 + s2) / 2;
+      total += dd / 500 * avg;
+    }
+    return total;
+  }, [splitPoints]);
+
+  const avgSplit = useMemo(() => {
+    if (predicted2k <= 0) return 0;
+    return predicted2k / 2000 * 500;
+  }, [predicted2k]);
+
+  const estWatts = useMemo(() => {
+    if (avgSplit <= 0) return 0;
+    const pace = avgSplit / 500;
+    return Math.round(2.8 / Math.pow(pace, 3));
+  }, [avgSplit]);
+
+  const splitMarkers = useMemo(() => {
+    // for split strip: eval the curve at 0, 500, 1000, 1500, 2000
+    const sorted = [...splitPoints].sort((a, b) => a.distance - b.distance);
+    const marks = [0, 500, 1000, 1500, 2000];
+    return marks.map((d) => {
+      // find bracket
+      if (d <= sorted[0].distance) return { d, s: sorted[0].split };
+      if (d >= sorted[sorted.length - 1].distance) return { d, s: sorted[sorted.length - 1].split };
+      for (let i = 0; i < sorted.length - 1; i++) {
+        if (d >= sorted[i].distance && d <= sorted[i + 1].distance) {
+          const r = (d - sorted[i].distance) / (sorted[i + 1].distance - sorted[i].distance);
+          const s1 = splitToSeconds(sorted[i].split);
+          const s2 = splitToSeconds(sorted[i + 1].split);
+          return { d, s: secondsToSplit(s1 + (s2 - s1) * r) };
+        }
+      }
+      return { d, s: sorted[0].split };
+    });
+  }, [splitPoints]);
+
+  // ---------- CANVAS GRAPH ----------
+  const drawGraph = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    const w = rect.width,h = rect.height;
+    const pad = { t: 16, r: 16, b: 24, l: 36 };
+    const gw = w - pad.l - pad.r;
+    const gh = h - pad.t - pad.b;
+
+    // accent
+    const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+    const fg4 = getComputedStyle(document.documentElement).getPropertyValue('--fg-4').trim();
+    const fg3 = getComputedStyle(document.documentElement).getPropertyValue('--fg-3').trim();
+    const line = getComputedStyle(document.documentElement).getPropertyValue('--line').trim();
+    const bg1 = getComputedStyle(document.documentElement).getPropertyValue('--bg-1').trim();
+
+    ctx.clearRect(0, 0, w, h);
+
+    // determine y range dynamically around points
+    const splits = splitPoints.map((p) => splitToSeconds(p.split));
+    const ymin = Math.min(...splits) - 5;
+    const ymax = Math.max(...splits) + 5;
+    const yToPx = (y) => pad.t + (1 - (y - ymin) / (ymax - ymin)) * gh;
+    const xToPx = (x) => pad.l + x / 2000 * gw;
+
+    // gridlines (x)
+    ctx.strokeStyle = line;
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 2000; i += 500) {
+      const x = xToPx(i);
+      ctx.beginPath();
+      ctx.moveTo(x, pad.t);
+      ctx.lineTo(x, pad.t + gh);
+      ctx.stroke();
+    }
+    // gridlines (y)
+    const yStep = (ymax - ymin) / 4;
+    for (let i = 0; i <= 4; i++) {
+      const y = yToPx(ymin + i * yStep);
+      ctx.beginPath();
+      ctx.moveTo(pad.l, y);
+      ctx.lineTo(pad.l + gw, y);
+      ctx.stroke();
+    }
+
+    // x axis labels
+    ctx.fillStyle = fg4;
+    ctx.font = '10px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    for (let i = 0; i <= 2000; i += 500) {
+      ctx.fillText(`${i}`, xToPx(i), pad.t + gh + 14);
+    }
+    // y axis labels
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= 4; i++) {
+      const val = ymin + i * yStep;
+      ctx.fillText(secondsToSplit(val).replace(/\.\d/, ''), pad.l - 8, yToPx(val) + 3);
+    }
+
+    // area under curve
+    const sorted = [...splitPoints].sort((a, b) => a.distance - b.distance);
+    ctx.fillStyle = `color-mix(in oklch, ${accent} 12%, transparent)`;
+    ctx.beginPath();
+    ctx.moveTo(xToPx(sorted[0].distance), pad.t + gh);
+    sorted.forEach((p) => ctx.lineTo(xToPx(p.distance), yToPx(splitToSeconds(p.split))));
+    ctx.lineTo(xToPx(sorted[sorted.length - 1].distance), pad.t + gh);
+    ctx.closePath();
+    ctx.fill();
+
+    // line
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    sorted.forEach((p, i) => {
+      const x = xToPx(p.distance);
+      const y = yToPx(splitToSeconds(p.split));
+      if (i === 0) ctx.moveTo(x, y);else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // points
+    sorted.forEach((p) => {
+      const x = xToPx(p.distance);
+      const y = yToPx(splitToSeconds(p.split));
+      ctx.beginPath();
+      ctx.arc(x, y, 6, 0, Math.PI * 2);
+      ctx.fillStyle = bg1;
+      ctx.fill();
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    });
+  }, [splitPoints]);
+
+  useEffect(() => {
+    if (mode !== 'predictor') return;
+    drawGraph();
+    const onResize = () => drawGraph();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [mode, drawGraph, tweaks]);
+
+  // ---------- CANVAS INTERACTIONS ----------
+  const getPointAt = (x, y) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const w = rect.width,h = rect.height;
+    const pad = { t: 16, r: 16, b: 24, l: 36 };
+    const splits = splitPoints.map((p) => splitToSeconds(p.split));
+    const ymin = Math.min(...splits) - 5;
+    const ymax = Math.max(...splits) + 5;
+    const yToPx = (yy) => pad.t + (1 - (yy - ymin) / (ymax - ymin)) * (h - pad.t - pad.b);
+    const xToPx = (xx) => pad.l + xx / 2000 * (w - pad.l - pad.r);
+    for (let i = 0; i < splitPoints.length; i++) {
+      const px = xToPx(splitPoints[i].distance);
+      const py = yToPx(splitToSeconds(splitPoints[i].split));
+      if (Math.hypot(x - px, y - py) < 14) return i;
+    }
+    return null;
+  };
+
+  const canvasMouseDown = (e) => {
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const idx = getPointAt(x, y);
+    if (idx !== null) setDraggedPoint(idx);
+  };
+
+  const canvasRightClick = (e) => {
+    e.preventDefault();
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const w = rect.width,h = rect.height;
+    const pad = { t: 16, r: 16, b: 24, l: 36 };
+    const splits = splitPoints.map((p) => splitToSeconds(p.split));
+    const ymin = Math.min(...splits) - 5;
+    const ymax = Math.max(...splits) + 5;
+    let d = Math.round((x - pad.l) / (w - pad.l - pad.r) * 2000 / 50) * 50;
+    d = Math.max(0, Math.min(2000, d));
+    let s = ymin + (1 - (y - pad.t) / (h - pad.t - pad.b)) * (ymax - ymin);
+    s = Math.max(60, Math.min(180, s));
+    if (splitPoints.some((p) => p.distance === d)) return;
+    setSplitPoints([...splitPoints, { distance: d, split: secondsToSplit(s) }]);
+  };
+
+  useEffect(() => {
+    const onMove = (e) => {
+      if (draggedPoint === null || !canvasRef.current) return;
+      const rect = canvasRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const w = rect.width,h = rect.height;
+      const pad = { t: 16, r: 16, b: 24, l: 36 };
+      const splits = splitPoints.map((p) => splitToSeconds(p.split));
+      const ymin = Math.min(...splits) - 5;
+      const ymax = Math.max(...splits) + 5;
+      let d = Math.round((x - pad.l) / (w - pad.l - pad.r) * 2000 / 50) * 50;
+      d = Math.max(0, Math.min(2000, d));
+      let s = ymin + (1 - (y - pad.t) / (h - pad.t - pad.b)) * (ymax - ymin);
+      s = Math.max(60, Math.min(180, s));
+      const newSplit = secondsToSplit(s);
+      setTooltipPos({ x: e.clientX, y: e.clientY, visible: true, distance: d, split: newSplit });
+      setSplitPoints((prev) => {
+        const next = [...prev];
+        next[draggedPoint] = { distance: d, split: newSplit };
+        return next;
+      });
+    };
+    const onUp = () => {
+      if (draggedPoint !== null) {
+        setDraggedPoint(null);
+        setTooltipPos((p) => ({ ...p, visible: false }));
+      }
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+  }, [draggedPoint, splitPoints]);
+
+  // ---------- POINT MGMT ----------
+  const updateSplit = (idx, val) => {
+    const next = [...splitPoints];
+    next[idx].split = val;
+    setSplitPoints(next);
+  };
+  const removePoint = (idx) => {
+    if (splitPoints.length > 2) setSplitPoints(splitPoints.filter((_, i) => i !== idx));
+  };
+  const addPoint = () => {
+    const d = parseInt(newSplitDistance);
+    if (isNaN(d) || d < 0 || d > 2000) return;
+    if (splitPoints.some((p) => p.distance === d)) return;
+    const sorted = [...splitPoints].sort((a, b) => a.distance - b.distance);
+    let split = '1:50';
+    for (let i = 0; i < sorted.length - 1; i++) {
+      if (d > sorted[i].distance && d < sorted[i + 1].distance) {
+        const s1 = splitToSeconds(sorted[i].split);
+        const s2 = splitToSeconds(sorted[i + 1].split);
+        const r = (d - sorted[i].distance) / (sorted[i + 1].distance - sorted[i].distance);
+        split = secondsToSplit(s1 + (s2 - s1) * r);
+        break;
+      }
+    }
+    setSplitPoints([...splitPoints, { distance: d, split }]);
+    setNewSplitDistance('');
+  };
+
+  const saveProfile = () => {
+    if (!profileName.trim()) return;
+    setSavedProfiles([...savedProfiles, {
+      id: Date.now(),
+      name: profileName.trim(),
+      splitPoints: [...splitPoints],
+      time: secondsToSplit(predicted2k)
+    }]);
+    setProfileName('');
+    setShowSaveDialog(false);
+  };
+  const loadProfile = (p) => setSplitPoints([...p.splitPoints]);
+  const deleteProfile = (id) => setSavedProfiles(savedProfiles.filter((p) => p.id !== id));
+  const resetDefault = () => setSplitPoints([
+  { distance: 0, split: '1:45' },
+  { distance: 500, split: '1:45' },
+  { distance: 1000, split: '1:45' },
+  { distance: 1500, split: '1:45' },
+  { distance: 2000, split: '1:45' }]
+  );
+
+  // ---------- SPLIT CALC ----------
+  const calcSplits = () => {
+    const d = distance === 'custom' ? parseInt(customDistance) : parseInt(distance);
+    let m = 0,s = 0;
+    if (totalTime.includes(':')) {
+      const [a, b] = totalTime.split(':');
+      m = parseInt(a) || 0;
+      s = parseFloat(b) || 0;
+    } else {
+      const t = parseFloat(totalTime) || 0;
+      m = Math.floor(t / 60);s = t % 60;
+    }
+    if (!d || d <= 0 || m === 0 && s === 0) return;
+    const tot = m * 60 + s;
+    const pace = tot / d;
+    const sp500 = pace * 500;
+    const watts = Math.round(2.8 / Math.pow(sp500 / 500, 3));
+    const quarter = pace * (d / 4);
+    const half = pace * (d / 2);
+    setSplits({
+      split500: secondsToSplit(sp500),
+      quarter: secondsToSplit(quarter),
+      half: secondsToSplit(half),
+      perMeter: pace.toFixed(3),
+      watts
+    });
+  };
+
+  // ---------- WATT CALC ----------
+  const wattResult = useMemo(() => {
+    if (wattMode === 'split-to-watts') {
+      const sec = splitToSeconds(wattSplitInput);
+      if (!sec || sec <= 0) return null;
+      const w = 2.8 / Math.pow(sec / 500, 3);
+      return { watts: Math.round(w), split: wattSplitInput, seconds: sec };
+    } else {
+      const w = parseFloat(wattsInput);
+      if (!w || w <= 0) return null;
+      const pace = Math.pow(2.8 / w, 1 / 3); // sec per meter
+      const sp500 = pace * 500;
+      return { watts: w, split: secondsToSplit(sp500), seconds: sp500 };
+    }
+  }, [wattMode, wattSplitInput, wattsInput]);
+
+  const wattTiers = [
+  { name: 'Easy', min: 0, max: 150, pace: '2:20 +' },
+  { name: 'Steady', min: 150, max: 250, pace: '2:00 – 2:20' },
+  { name: 'Threshold', min: 250, max: 350, pace: '1:45 – 2:00' },
+  { name: 'Race', min: 350, max: 600, pace: '1:45 –' }];
+
+  const currentTier = wattResult ? wattTiers.findIndex((t) => wattResult.watts >= t.min && wattResult.watts < t.max) : -1;
+
+  // ---------- SURVEY ----------
+  const designs = [
+  { id: 'design1', name: 'Fire Wave', desc: 'Bold vermillion waveforms across the chest, mono logo in accent.', pattern: 'wave' },
+  { id: 'design2', name: 'Speed Stripes', desc: 'Twin racing stripes with gradient fade — aerodynamic, tight, athletic.', pattern: 'stripes' },
+  { id: 'design3', name: 'Wave Flow', desc: 'Minimal white base with flowing wave pattern down the sleeves.', pattern: 'sleeves' },
+  { id: 'design4', name: 'Classic Block', desc: 'Tonal color blocks with bold wordmark — heritage meets modern.', pattern: 'blocks' }];
+
+
+  const submitVote = () => {
+    if (!selectedDesign) return;
+    setVotes((v) => ({ ...v, [selectedDesign]: v[selectedDesign] + 1 }));
+    setHasVoted(true);
+  };
+  const totalVotes = Object.values(votes).reduce((a, b) => a + b, 0);
+  const winningDesign = Object.entries(votes).sort((a, b) => b[1] - a[1])[0][0];
+
+  // ---------- RENDER ----------
+  const tabs = [
+  { id: 'predictor', label: '2K Predictor', num: '01' },
+  { id: 'calculator', label: 'Split Calculator', num: '02' },
+  { id: 'watts', label: 'Watt / Split', num: '03' },
+  { id: 'survey', label: 'Uni Survey', num: '04' },
+  { id: 'trailer', label: 'Trailer Loader', num: '05' }];
+
+
+  return (
+    <div className="shell">
+      {/* TOP BAR */}
+      <div className="topbar">
+        <div className="brand">
+          <div className="mark">R</div>
+          <div>
+            <div className="brand-name">RowRight <span>/ Performance</span></div>
+            <div style={{ fontSize: 10, color: 'var(--fg-4)', fontFamily: 'var(--mono)', letterSpacing: '0.1em', marginTop: 2 }}>
+              v2.0 · CALIBRATED
+            </div>
+          </div>
+        </div>
+        <div className="topbar-right">
+          <div className="status"><div className="pulse" /> LIVE</div>
+          <div className="mono" style={{ fontSize: 11 }}>
+            {new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase()}
+          </div>
+        </div>
+      </div>
+
+      {/* HERO */}
+      <div className="hero">
+        <h1>
+          Row<span className="slash">/</span>Right
+          <em>Made for rowers, by rowers.</em>
+        </h1>
+        <div className="hero-meta">
+          <div className="meta-cell">
+            <div className="k">Current Flow</div>
+            <div className="v">{tabs.find((t) => t.id === mode)?.label}</div>
+          </div>
+          <div className="meta-cell">
+            <div className="k">Predicted 2K</div>
+            <div className="v" style={{ color: 'var(--accent)' }}>{secondsToSplit(predicted2k)}</div>
+          </div>
+          <div className="meta-cell">
+            <div className="k">Avg Power</div>
+            <div className="v">{estWatts}w</div>
+          </div>
+        </div>
+      </div>
+
+      {/* TABS */}
+      <nav className="tabs">
+        {tabs.map((t) => <button
+          key={t.id}
+          className={`tab ${mode === t.id ? 'active' : ''}`}
+          onClick={() => setMode(t.id)}>
+          
+            <span className="num mono">{t.num}</span>
+            {t.label}
+          </button>
+        )}
+      </nav>
+
+      {/* ============ PREDICTOR ============ */}
+      {mode === 'predictor' &&
+      <div>
+          {/* Three-up hero */}
+          <div className="predictor-hero">
+            <div className="tile lead" style={{ backgroundColor: "rgb(255, 255, 255)" }}>
+              <div className="eyebrow"><span className="dot" /> Predicted 2000m</div>
+              <div className="hero-time" style={{ color: "rgb(0, 0, 0)" }}>
+                {secondsToSplit(predicted2k).split('.')[0]}<span className="ms">.{secondsToSplit(predicted2k).split('.')[1]}</span>
+              </div>
+              <div className="hero-sub">
+                <span className="chip">{secondsToSplit(avgSplit)}</span>
+                avg split · {estWatts}w
+              </div>
+            </div>
+
+            <div className="tile">
+              <div className="eyebrow" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span><span className="dot" /> Pacing curve</span>
+                <span className="mono" style={{ color: 'var(--fg-4)', fontSize: 9 }}>R-CLICK TO ADD</span>
+              </div>
+              <div className="graph-wrap">
+                <canvas
+                ref={canvasRef}
+                onMouseDown={canvasMouseDown}
+                onContextMenu={canvasRightClick}
+                style={{ height: 200 }} />
+              
+              </div>
+              <div className="graph-hint">DRAG POINTS · SHAPE THE PIECE</div>
+            </div>
+
+            <div className="tile">
+              <div className="eyebrow"><span className="dot" /> Split strip</div>
+              <div className="strip">
+                {splitMarkers.map((sm, i) =>
+              <div key={sm.d} className={`strip-row ${sm.d === 1000 ? 'hl' : ''}`}>
+                    <div className="d">{sm.d === 0 ? 'START' : sm.d === 2000 ? 'FINISH' : `${sm.d}M`}</div>
+                    <div className="t">{sm.s}</div>
+                  </div>
+              )}
+              </div>
+            </div>
+          </div>
+
+          {/* Points + profiles */}
+          <div className="row-2">
+            <div className="card">
+              <div className="card-head">
+                <h3>Split Points <span className="mono" style={{ color: 'var(--fg-3)', fontWeight: 400, marginLeft: 8 }}>· {splitPoints.length}</span></h3>
+                <div className="btn-row">
+                  <button className="btn ghost sm" onClick={resetDefault}>Reset</button>
+                  <button className="btn primary sm" onClick={() => setShowSaveDialog(true)}>Save profile</button>
+                </div>
+              </div>
+              <div className="card-body">
+                <div className="points-list">
+                  {[...splitPoints].sort((a, b) => a.distance - b.distance).map((p) => {
+                  const idx = splitPoints.indexOf(p);
+                  return (
+                    <div key={idx} className="point-row">
+                        <div className="dist">{String(p.distance).padStart(4, '0')}m</div>
+                        <input value={p.split} onChange={(e) => updateSplit(idx, e.target.value)} />
+                        {splitPoints.length > 2 &&
+                      <button className="rm" onClick={() => removePoint(idx)}>REMOVE</button>
+                      }
+                      </div>);
+
+                })}
+                </div>
+                <div className="add-point">
+                  <input
+                  type="number"
+                  placeholder="Add split at distance (0–2000)"
+                  value={newSplitDistance}
+                  onChange={(e) => setNewSplitDistance(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && addPoint()} />
+                
+                  <button className="btn" onClick={addPoint}>Add point</button>
+                </div>
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="card-head">
+                <h3>Saved profiles <span className="mono" style={{ color: 'var(--fg-3)', fontWeight: 400, marginLeft: 8 }}>· {savedProfiles.length}</span></h3>
+              </div>
+              <div className="card-body">
+                {savedProfiles.length === 0 ?
+              <div style={{ padding: '40px 10px', textAlign: 'center', color: 'var(--fg-4)', fontSize: 12 }}>
+                    No profiles yet.<br />
+                    <span style={{ color: 'var(--fg-3)' }}>Save the current strategy to compare pacing.</span>
+                  </div> :
+
+              <div className="profiles">
+                    {savedProfiles.map((p) =>
+                <div key={p.id} className="profile-item">
+                        <div>
+                          <div className="name">{p.name}</div>
+                          <div className="time">{p.time}</div>
+                        </div>
+                        <button className="mini" onClick={() => loadProfile(p)}>LOAD</button>
+                        <button className="mini del" onClick={() => deleteProfile(p.id)}>DEL</button>
+                      </div>
+                )}
+                  </div>
+              }
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      {/* ============ SPLIT CALCULATOR ============ */}
+      {mode === 'calculator' &&
+      <div className="calc-grid">
+          <div className="card">
+            <div className="card-head"><h3>Inputs</h3></div>
+            <div className="card-body">
+              <div className="field">
+                <label>Distance</label>
+                <select value={distance} onChange={(e) => setDistance(e.target.value)}>
+                  <option value="500">500m</option>
+                  <option value="1000">1,000m</option>
+                  <option value="2000">2,000m</option>
+                  <option value="5000">5,000m</option>
+                  <option value="6000">6,000m</option>
+                  <option value="10000">10,000m</option>
+                  <option value="custom">Custom…</option>
+                </select>
+              </div>
+              {distance === 'custom' &&
+            <div className="field">
+                  <label>Custom distance (m)</label>
+                  <input
+                className="mono-input"
+                type="number"
+                placeholder="e.g. 3000"
+                value={customDistance}
+                onChange={(e) => setCustomDistance(e.target.value)} />
+              
+                </div>
+            }
+              <div className="field">
+                <label>Total time</label>
+                <input
+                className="mono-input"
+                type="text"
+                placeholder="7:00.0"
+                value={totalTime}
+                onChange={(e) => setTotalTime(e.target.value)} />
+              
+              </div>
+              <button className="btn primary" style={{ width: '100%', justifyContent: 'center', padding: '14px' }} onClick={calcSplits}>
+                Calculate splits
+              </button>
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="card-head"><h3>Results</h3></div>
+            <div className="card-body">
+              {splits ?
+            <>
+                  <div className="eyebrow"><span className="dot" /> Pace per 500m</div>
+                  <div className="result-big">{splits.split500}</div>
+                  <div className="mono" style={{ color: 'var(--fg-3)', fontSize: 12 }}>
+                    {splits.perMeter}s per meter
+                  </div>
+                  <div className="result-grid">
+                    <div className="result-cell">
+                      <div className="k">¼ Distance</div>
+                      <div className="v">{splits.quarter}</div>
+                    </div>
+                    <div className="result-cell">
+                      <div className="k">½ Distance</div>
+                      <div className="v">{splits.half}</div>
+                    </div>
+                    <div className="result-cell">
+                      <div className="k">Power</div>
+                      <div className="v">{splits.watts}w</div>
+                    </div>
+                    <div className="result-cell">
+                      <div className="k">Pace / 500m</div>
+                      <div className="v" style={{ color: 'var(--accent)' }}>{splits.split500}</div>
+                    </div>
+                  </div>
+                </> :
+
+            <div style={{ padding: '60px 10px', textAlign: 'center', color: 'var(--fg-4)', fontSize: 13 }}>
+                  Enter distance and total time, then hit <span style={{ color: 'var(--fg-2)' }}>Calculate</span>.
+                </div>
+            }
+            </div>
+          </div>
+        </div>
+      }
+
+      {/* ============ WATT / SPLIT ============ */}
+      {mode === 'watts' &&
+      <div className="watt-grid">
+          <div className="watt-main">
+            <div className="watt-input-area">
+              <div className="watt-toggle">
+                <button className={wattMode === 'split-to-watts' ? 'active' : ''} onClick={() => setWattMode('split-to-watts')}>
+                  Split → Watts
+                </button>
+                <button className={wattMode === 'watts-to-split' ? 'active' : ''} onClick={() => setWattMode('watts-to-split')}>
+                  Watts → Split
+                </button>
+              </div>
+              <div>
+                <div className="eyebrow" style={{ marginBottom: 12 }}>
+                  {wattMode === 'split-to-watts' ? 'Enter 500m split' : 'Enter power output'}
+                </div>
+                {wattMode === 'split-to-watts' ?
+              <>
+                    <input
+                  className="watt-big-input"
+                  value={wattSplitInput}
+                  onChange={(e) => setWattSplitInput(e.target.value)}
+                  placeholder="1:45.0" />
+                
+                    <div className="watt-unit">MIN:SEC.T per 500M</div>
+                  </> :
+
+              <>
+                    <input
+                  className="watt-big-input"
+                  type="number"
+                  value={wattsInput}
+                  onChange={(e) => setWattsInput(e.target.value)}
+                  placeholder="300" />
+                
+                    <div className="watt-unit">WATTS</div>
+                  </>
+              }
+              </div>
+            </div>
+
+            <div className="watt-output">
+              <div className="eyebrow"><span className="dot" /> {wattMode === 'split-to-watts' ? 'Power output' : 'Split pace'}</div>
+              <div className="watt-out-big">
+                {wattResult ? wattMode === 'split-to-watts' ? wattResult.watts : wattResult.split.split('.')[0] : '—'}
+              </div>
+              <div className="watt-out-unit">
+                {wattResult ? wattMode === 'split-to-watts' ? 'WATTS' : `.${wattResult.split.split('.')[1]} per 500M` : ''}
+              </div>
+              {wattResult &&
+            <div style={{ marginTop: 16, fontSize: 12, color: 'var(--fg-3)', fontFamily: 'var(--mono)' }}>
+                  {wattMode === 'split-to-watts' ?
+              `= ${wattResult.watts} W @ ${wattResult.split} /500m` :
+              `= ${wattResult.split} /500m @ ${wattResult.watts}W`
+              }
+                </div>
+            }
+            </div>
+          </div>
+
+          <div className="card" style={{ gridColumn: 'span 2' }}>
+            <div className="card-head">
+              <h3>Tip</h3>
+              <div className="mono" style={{ fontSize: 11, color: 'var(--fg-3)' }}>
+                Formula: watts = 2.80 / pace³
+              </div>
+            </div>
+            <div className="card-body">
+              <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+                <div style={{
+                flexShrink: 0,
+                width: 32, height: 32,
+                borderRadius: 6,
+                background: 'var(--accent-dim)',
+                color: 'var(--accent)',
+                display: 'grid', placeItems: 'center',
+                fontFamily: 'var(--mono)', fontWeight: 700, fontSize: 14
+              }}>i</div>
+                <div style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--fg-2)', maxWidth: 640 }}>
+                  <span style={{ color: 'var(--fg)', fontWeight: 600 }}>Watts measure mechanical output, not effort.</span>{'\n'}
+                  To train by intensity, pair your power numbers with heart-rate zones. Easy pieces should sit in zones 1–2, threshold work in zone 4, and race-pace efforts in zone 5. Your split tells you how fast the boat moves; your heart rate tells you how hard your body is working.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      {/* ============ SURVEY ============ */}
+      {mode === 'survey' &&
+      <div>
+          <div className="card" style={{ marginBottom: 16 }}>
+            <div className="card-head">
+              <h3>Choose next season's kit</h3>
+              <div className="mono" style={{ fontSize: 11, color: 'var(--fg-3)' }}>
+                {totalVotes} votes cast
+              </div>
+            </div>
+            <div className="card-body">
+              <div className="survey-grid">
+                {designs.map((d) =>
+              <div
+                key={d.id}
+                className={`uni-card ${selectedDesign === d.id ? 'selected' : ''}`}
+                onClick={() => !hasVoted && setSelectedDesign(d.id)}
+                style={{ cursor: hasVoted ? 'default' : 'pointer' }}>
+                
+                    <div className="uni-preview">
+                      <KitPreview pattern={d.pattern} />
+                    </div>
+                    <div className="uni-meta">
+                      <div className="name">{d.name}</div>
+                      <div className="desc">{d.desc}</div>
+                      <div className="badge">
+                        {hasVoted ? `${(votes[d.id] / totalVotes * 100).toFixed(0)}% · ${votes[d.id]} VOTES` :
+                    selectedDesign === d.id ? '◉ SELECTED' : 'TAP TO PICK'}
+                      </div>
+                    </div>
+                  </div>
+              )}
+              </div>
+              <div style={{ marginTop: 20, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                {hasVoted ?
+              <button className="btn ghost" onClick={() => {setHasVoted(false);setSelectedDesign(null);}}>
+                    Change vote
+                  </button> :
+
+              <button
+                className="btn primary"
+                onClick={submitVote}
+                style={{ opacity: selectedDesign ? 1 : 0.4, pointerEvents: selectedDesign ? 'auto' : 'none' }}>
+                
+                    Submit vote
+                  </button>
+              }
+              </div>
+            </div>
+          </div>
+
+          {hasVoted &&
+        <div className="card">
+              <div className="card-head">
+                <h3>Results</h3>
+                <div className="mono" style={{ fontSize: 11, color: 'var(--fg-3)' }}>
+                  Leader: {designs.find((d) => d.id === winningDesign)?.name}
+                </div>
+              </div>
+              <div className="card-body">
+                {designs.map((d) => {
+              const pct = votes[d.id] / totalVotes * 100;
+              const isWin = d.id === winningDesign;
+              return (
+                <div key={d.id} className={`vote-row ${isWin ? 'win' : ''}`}>
+                      <div className="vote-head">
+                        <span>{d.name}</span>
+                        <span className="n">{votes[d.id]} · {pct.toFixed(1)}%</span>
+                      </div>
+                      <div className="vote-bar">
+                        <div className="vote-bar-fill" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>);
+
+            })}
+              </div>
+            </div>
+        }
+        </div>
+      }
+
+      {/* ============ TRAILER LOADER ============ */}
+      {mode === 'trailer' &&
+      <div className="trailer-grid">
+          {/* DIMS */}
+          <div className="trailer-controls-top">
+            <div className="card">
+              <div className="card-head"><h3>Trailer dimensions</h3></div>
+              <div className="card-body">
+                <div className="dim-controls">
+                  <div className="dim-ctrl">
+                    <div className="dlabel">Rows</div>
+                    <div className="stepper">
+                      <button onClick={() => setTrailerRows(Math.max(1, trailerRows - 1))}>–</button>
+                      <div className="num">{trailerRows}</div>
+                      <button onClick={() => setTrailerRows(Math.min(10, trailerRows + 1))}>+</button>
+                    </div>
+                  </div>
+                  <div className="dim-ctrl">
+                    <div className="dlabel">Columns</div>
+                    <div className="stepper">
+                      <button onClick={() => setTrailerCols(Math.max(1, trailerCols - 1))}>–</button>
+                      <div className="num">{trailerCols}</div>
+                      <button onClick={() => setTrailerCols(Math.min(6, trailerCols + 1))}>+</button>
+                    </div>
+                  </div>
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--fg-4)', fontFamily: 'var(--mono)', letterSpacing: '0.06em' }}>
+                  {trailerRows} × {trailerCols} → {trailerRows * trailerCols} slots
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* STAGE */}
+          <div className="trailer-stage">
+            <div className="eyebrow"><span className="dot" /> Trailer cross-section · viewed from rear</div>
+            <div className="trailer-viz">
+              <div className="trailer-axle">
+                <span>← PORT</span>
+                <span>STARBOARD →</span>
+              </div>
+              <div className="trailer-grid-cells" style={{ gridTemplateColumns: `repeat(${trailerCols}, 1fr)` }}>
+                {Array.from({ length: trailerRows * trailerCols }).map((_, idx) => {
+                // Render top row first (upper racks) -> we flip so row 0 is top = highest rack
+                const r = Math.floor(idx / trailerCols);
+                const c = idx % trailerCols;
+                // Display labelling: rack number from top
+                const key = `${r}-${c}`;
+                const cellBoatIds = placements[key] || [];
+                const cellBoats = cellBoatIds.map((id) => boats.find((b) => b.id === id)).filter(Boolean);
+                const isFull = cellBoats.length >= 2;
+                const rackNum = trailerRows - r;
+                const sideLabel = String.fromCharCode(65 + c);
+                return (
+                  <div
+                    key={key}
+                    className={`cell ${cellBoats.length > 0 ? 'filled' : ''} ${cellBoats.length === 2 ? 'stacked' : ''} ${dragOverCell === key ? 'drop-hover' : ''}`}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDragOverCell(key);
+                    }}
+                    onDragLeave={() => setDragOverCell((cur) => cur === key ? null : cur)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (!draggedBoat) return;
+                      const next = { ...placements };
+                      // remove dragged boat from its current location
+                      let cameFrom = null;
+                      for (const k of Object.keys(next)) {
+                        const arr = (next[k] || []).filter((id) => {
+                          if (id === draggedBoat) { cameFrom = k; return false; }
+                          return true;
+                        });
+                        if (arr.length === 0) delete next[k]; else next[k] = arr;
+                      }
+                      const existing = next[key] || [];
+                      if (existing.length < 2) {
+                        next[key] = [...existing, draggedBoat];
+                      } else {
+                        // full: swap the last boat back to source (or pool if none)
+                        const displaced = existing[existing.length - 1];
+                        next[key] = [...existing.slice(0, -1), draggedBoat];
+                        if (cameFrom && cameFrom !== key) {
+                          next[cameFrom] = [...(next[cameFrom] || []), displaced];
+                        }
+                      }
+                      setPlacements(next);
+                      setDraggedBoat(null);
+                      setDragOverCell(null);
+                    }}
+                    title={cellBoats.length === 0 ? 'Drop a boat here' : cellBoats.length === 1 ? 'Room for one more' : 'Full — drop replaces last boat'}>
+
+                      <span className="coord">R{rackNum}·{sideLabel}</span>
+                      {cellBoats.length === 0 ?
+                        <span style={{ color: 'var(--fg-4)' }}>—</span> :
+                        <div className="cell-boats">
+                          {cellBoats.map((b, bi) => (
+                            <div
+                              key={b.id}
+                              className="cell-boat"
+                              draggable
+                              onDragStart={(e) => {
+                                setDraggedBoat(b.id);
+                                e.dataTransfer.setData('source-cell', key);
+                                e.dataTransfer.effectAllowed = 'move';
+                                e.stopPropagation();
+                              }}
+                              onDragEnd={() => { setDraggedBoat(null); setDragOverCell(null); }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const next = { ...placements };
+                                const arr = (next[key] || []).filter((id) => id !== b.id);
+                                if (arr.length === 0) delete next[key]; else next[key] = arr;
+                                setPlacements(next);
+                              }}
+                              title={`${b.name} — click to remove, drag to move`}
+                            >
+                              <span className="cell-tag">{b.type}</span>
+                              <span className="cell-name">{b.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      }
+                    </div>);
+
+              })}
+              </div>
+            </div>
+            <div className="trailer-legend">
+              <span>TOP ROW = HIGHEST RACK</span>
+              <span className="filled-count">{Object.values(placements).flat().length} / {trailerRows * trailerCols * 2} FILLED</span>
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--fg-3)', lineHeight: 1.6 }}>
+              Drag boat bubbles from the pool onto any slot — each slot can hold up to two boats. Drag a placed boat to another slot to reorder, or click to remove it.
+            </div>
+          </div>
+
+          {/* BOATS + LOAD PLANS */}
+          <div className="trailer-controls-bottom" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--gap)' }}>
+            <div className="card">
+              <div className="card-head">
+                <h3>Boats</h3>
+                <div className="mono" style={{ fontSize: 11, color: 'var(--fg-3)' }}>
+                  {Object.keys(placements).length}/{boats.length} placed
+                </div>
+              </div>
+              <div className="card-body">
+                <div className="add-boat-row">
+                  <input
+                  placeholder="Boat name"
+                  value={newBoatName}
+                  onChange={(e) => setNewBoatName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newBoatName.trim()) {
+                      setBoats([...boats, { id: `b${Date.now()}`, name: newBoatName.trim(), type: newBoatType }]);
+                      setNewBoatName('');
+                    }
+                  }} />
+
+                  <select value={newBoatType} onChange={(e) => setNewBoatType(e.target.value)}>
+                    <option value="8+">8+</option>
+                    <option value="4+">4+</option>
+                    <option value="4-">4–</option>
+                    <option value="4x">4x</option>
+                    <option value="2x">2x</option>
+                    <option value="2-">2–</option>
+                    <option value="1x">1x</option>
+                  </select>
+                  <button
+                  className="btn primary sm"
+                  onClick={() => {
+                    if (!newBoatName.trim()) return;
+                    setBoats([...boats, { id: `b${Date.now()}`, name: newBoatName.trim(), type: newBoatType }]);
+                    setNewBoatName('');
+                  }}>
+                  Add</button>
+                </div>
+                <div className={`boat-pool ${boats.filter((b) => !Object.values(placements).flat().includes(b.id)).length === 0 ? 'empty' : ''}`}
+                  onDragOver={(e) => { e.preventDefault(); }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (!draggedBoat) return;
+                    const next = { ...placements };
+                    for (const k of Object.keys(next)) {
+                      const arr = (next[k] || []).filter((id) => id !== draggedBoat);
+                      if (arr.length === 0) delete next[k]; else next[k] = arr;
+                    }
+                    setPlacements(next);
+                    setDraggedBoat(null);
+                    setDragOverCell(null);
+                  }}
+                >
+                  {boats.filter((b) => !Object.values(placements).flat().includes(b.id)).map((b) =>
+                <div
+                  key={b.id}
+                  className={`bubble ${draggedBoat === b.id ? 'dragging' : ''}`}
+                  draggable
+                  onDragStart={(e) => {
+                    setDraggedBoat(b.id);
+                    e.dataTransfer.effectAllowed = 'move';
+                  }}
+                  onDragEnd={() => {setDraggedBoat(null);setDragOverCell(null);}}>
+
+                      <span className="tag">{b.type}</span>
+                      {b.name}
+                      <span
+                    className="x"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setBoats(boats.filter((x) => x.id !== b.id));
+                    }}>
+                    ×</span>
+                    </div>
+                )}
+                </div>
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="card-head">
+                <h3>Load plans <span className="mono" style={{ color: 'var(--fg-3)', fontWeight: 400, marginLeft: 8 }}>· {trailerProfiles.length}</span></h3>
+                <div className="btn-row">
+                  <button className="btn ghost sm" onClick={() => {setPlacements({});}}>Clear</button>
+                  <button className="btn primary sm" onClick={() => setShowTrailerSaveDialog(true)}>Save plan</button>
+                </div>
+              </div>
+              <div className="card-body">
+                {trailerProfiles.length === 0 ?
+              <div style={{ padding: '20px 10px', textAlign: 'center', color: 'var(--fg-4)', fontSize: 12 }}>
+                    No plans yet.<br />
+                    <span style={{ color: 'var(--fg-3)' }}>Save your loadout for this regatta.</span>
+                  </div> :
+
+              <div className="profiles">
+                    {trailerProfiles.map((p) =>
+                <div key={p.id} className="profile-item">
+                        <div>
+                          <div className="name">{p.name}</div>
+                          <div className="time">{p.rows}×{p.cols} · {Object.values(p.placements).flat().length} boats</div>
+                        </div>
+                        <button className="mini" onClick={() => {
+                    setTrailerRows(p.rows);
+                    setTrailerCols(p.cols);
+                    setBoats(p.boats);
+                    const migrated = {};
+                    for (const k of Object.keys(p.placements)) {
+                      const v = p.placements[k];
+                      migrated[k] = Array.isArray(v) ? v : [v];
+                    }
+                    setPlacements(migrated);
+                  }}>LOAD</button>
+                        <button className="mini del" onClick={() => setTrailerProfiles(trailerProfiles.filter((x) => x.id !== p.id))}>DEL</button>
+                      </div>
+                )}
+                  </div>
+              }
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      {/* ---------- DRAG TOOLTIP ---------- */}
+      {tooltipPos.visible &&
+      <div className="drag-tip" style={{ left: tooltipPos.x, top: tooltipPos.y }}>
+          <div className="d">{tooltipPos.distance}m</div>
+          {tooltipPos.split}<span style={{ color: 'var(--fg-3)', marginLeft: 4 }}>/500</span>
+        </div>
+      }
+
+      {/* ---------- SAVE DIALOG ---------- */}
+      {showSaveDialog &&
+      <div className="modal-back" onClick={() => setShowSaveDialog(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="eyebrow" style={{ marginBottom: 10 }}><span className="dot" /> Save profile</div>
+            <h2>Name this pacing strategy</h2>
+            <input
+            autoFocus
+            placeholder="e.g. Sprint Start, Negative Split…"
+            value={profileName}
+            onChange={(e) => setProfileName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && saveProfile()} />
+          
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button className="btn ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setShowSaveDialog(false)}>Cancel</button>
+              <button className="btn primary" style={{ flex: 1, justifyContent: 'center' }} onClick={saveProfile}>Save profile</button>
+            </div>
+          </div>
+        </div>
+      }
+
+      {/* ---------- SAVE DIALOG ---------- */}
+      {showTrailerSaveDialog &&
+      <div className="modal-back" onClick={() => setShowTrailerSaveDialog(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="eyebrow" style={{ marginBottom: 10 }}><span className="dot" /> Save load plan</div>
+            <h2>Name this trailer loadout</h2>
+            <input
+            autoFocus
+            placeholder="e.g. Head of Charles, Fall Classic…"
+            value={trailerProfileName}
+            onChange={(e) => setTrailerProfileName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && trailerProfileName.trim()) {
+                setTrailerProfiles([...trailerProfiles, {
+                  id: Date.now(),
+                  name: trailerProfileName.trim(),
+                  rows: trailerRows,
+                  cols: trailerCols,
+                  boats: [...boats],
+                  placements: { ...placements }
+                }]);
+                setTrailerProfileName('');
+                setShowTrailerSaveDialog(false);
+              }
+            }} />
+          
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button className="btn ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setShowTrailerSaveDialog(false)}>Cancel</button>
+              <button className="btn primary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => {
+              if (!trailerProfileName.trim()) return;
+              setTrailerProfiles([...trailerProfiles, {
+                id: Date.now(),
+                name: trailerProfileName.trim(),
+                rows: trailerRows,
+                cols: trailerCols,
+                boats: [...boats],
+                placements: { ...placements }
+              }]);
+              setTrailerProfileName('');
+              setShowTrailerSaveDialog(false);
+            }}>Save plan</button>
+            </div>
+          </div>
+        </div>
+      }
+
+      {/* ---------- TWEAKS PANEL ---------- */}
+      <div className={`tweaks-panel ${tweaksOpen ? 'open' : ''}`}>
+        <h4>
+          <span>Tweaks</span>
+          <button className="close" onClick={() => setTweaksOpen(false)}>×</button>
+        </h4>
+        <div className="tweak-row">
+          <div className="tlabel">
+            <span>Accent hue</span>
+            <span className="val">{tweaks.accentHue}°</span>
+          </div>
+          <div className="accent-swatches">
+            {[25, 55, 95, 155, 220, 290].map((h) =>
+            <div
+              key={h}
+              className={`sw ${tweaks.accentHue === h ? 'active' : ''}`}
+              style={{ background: `oklch(0.72 0.18 ${h})` }}
+              onClick={() => updateTweak('accentHue', h)} />
+
+            )}
+          </div>
+        </div>
+        <div className="tweak-row">
+          <div className="tlabel">
+            <span>Density</span>
+            <span className="val">{tweaks.density}</span>
+          </div>
+          <div className="density-pick">
+            {['compact', 'cozy', 'spacious'].map((d) =>
+            <button
+              key={d}
+              className={tweaks.density === d ? 'active' : ''}
+              onClick={() => updateTweak('density', d)}>
+              {d}</button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>);
+
+};
+
+// ---------- KIT PREVIEW SVG ----------
+const KitPreview = ({ pattern }) => {
+  const accent = 'var(--accent)';
+  const base = 'var(--bg-3)';
+  const stroke = 'var(--fg-4)';
+  // simple stylized jersey silhouette
+  return (
+    <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <clipPath id="jersey">
+          <path d="M25 15 L40 10 L60 10 L75 15 L92 25 L84 40 L72 36 L72 105 L28 105 L28 36 L16 40 L8 25 Z" />
+        </clipPath>
+      </defs>
+      {/* base */}
+      <path d="M25 15 L40 10 L60 10 L75 15 L92 25 L84 40 L72 36 L72 105 L28 105 L28 36 L16 40 L8 25 Z"
+      fill={base} stroke={stroke} strokeWidth="0.5" />
+      {/* pattern */}
+      <g clipPath="url(#jersey)">
+        {pattern === 'wave' &&
+        <>
+            <path d="M0 60 Q25 50 50 60 T100 60 L100 70 Q75 60 50 70 T0 70 Z" fill={accent} />
+            <path d="M0 75 Q25 68 50 75 T100 75 L100 80 Q75 73 50 80 T0 80 Z" fill={accent} opacity="0.5" />
+          </>
+        }
+        {pattern === 'stripes' &&
+        <>
+            <rect x="36" y="0" width="6" height="120" fill={accent} />
+            <rect x="58" y="0" width="6" height="120" fill={accent} opacity="0.6" />
+          </>
+        }
+        {pattern === 'sleeves' &&
+        <>
+            <path d="M8 25 L16 40 L28 36 L28 48 L12 44 Z" fill={accent} />
+            <path d="M92 25 L84 40 L72 36 L72 48 L88 44 Z" fill={accent} />
+            <circle cx="50" cy="55" r="6" fill="none" stroke={accent} strokeWidth="1.5" />
+          </>
+        }
+        {pattern === 'blocks' &&
+        <>
+            <rect x="0" y="60" width="100" height="45" fill={accent} />
+            <text x="50" y="45" textAnchor="middle" fill="var(--fg-2)" fontFamily="JetBrains Mono" fontSize="8" fontWeight="700">RR</text>
+          </>
+        }
+      </g>
+    </svg>);
+
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

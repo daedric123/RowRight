@@ -1,0 +1,426 @@
+/* ── Auth pages (Sign in / Create account) ──────────────────────────
+   Split marketing + card layout. Desktop: two columns; phone: single
+   scrolling column. Design ported from the RowRight auth mockup. */
+
+.auth-wrap {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--sans);
+}
+
+/* Left marketing column */
+.auth-marketing {
+  position: relative;
+  overflow: hidden;
+  flex: 1;
+  padding: 64px 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+}
+.auth-marketing::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("/images/auth-hero-rowers.png") center/cover no-repeat;
+  opacity: 0.22;
+  z-index: 0;
+}
+.auth-marketing > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Right card panel */
+.auth-panel {
+  width: 440px;
+  flex-shrink: 0;
+  background: var(--bg-1);
+  border-left: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+/* Brand lockup */
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.auth-brand .mark {
+  width: 40px;
+  height: 40px;
+  background: #f2f2f0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--bg);
+}
+.auth-brand .mark::after {
+  content: "";
+  position: absolute;
+  bottom: -3px;
+  right: -3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--accent);
+  border: 2px solid var(--bg);
+}
+.auth-brand .brand-name {
+  font-size: 17px;
+}
+.auth-brand .brand-name b {
+  font-weight: 700;
+  color: var(--fg);
+}
+.auth-brand .brand-name span {
+  color: var(--fg-3);
+  font-weight: 500;
+}
+.auth-brand .brand-ver {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--fg-4);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.auth-hero {
+  max-width: 520px;
+}
+.auth-hero h1 {
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 0 0 12px;
+}
+.auth-hero p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--fg-2);
+  margin: 0;
+}
+
+.auth-kicker {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--fg-4);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+/* Role cards (desktop) */
+.auth-roles {
+  display: flex;
+  gap: 14px;
+}
+.auth-role {
+  flex: 1;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px;
+}
+.auth-role .ico {
+  color: var(--fg-3);
+  margin-bottom: 10px;
+}
+.auth-role .name {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.auth-role .desc {
+  font-size: 12px;
+  color: var(--fg-3);
+  line-height: 1.5;
+}
+
+/* Feature grid (desktop) */
+.auth-features {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  max-width: 560px;
+}
+.auth-feature {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.auth-feature .ico {
+  color: var(--fg-3);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.auth-feature .name {
+  font-size: 13px;
+  font-weight: 600;
+}
+.auth-feature .sub {
+  font-size: 12px;
+  color: var(--fg-3);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+/* Feature chips (phone) */
+.auth-chips {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+.auth-chip {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 8px 12px;
+}
+.auth-chip span {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Coming-soon strip */
+.auth-soon {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px 18px;
+  max-width: 600px;
+}
+.auth-soon .tag {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  border: 1px solid oklch(0.72 0.18 25 / 35%);
+  background: oklch(0.72 0.18 25 / 12%);
+  padding: 3px 7px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.auth-soon .txt {
+  font-size: 12.5px;
+  color: var(--fg-3);
+}
+
+/* ── Auth card ─────────────────────────────────────────────── */
+.rr-card {
+  width: 400px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.rr-card-head {
+  padding: 20px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.rr-card-head .title {
+  font-weight: 600;
+  font-size: 16px;
+}
+.rr-card-head .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--fg-3);
+  text-transform: uppercase;
+}
+.rr-card-head .eyebrow .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--accent);
+  display: inline-block;
+}
+.rr-card-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.rr-card-foot {
+  border-top: 1px solid var(--line);
+  padding: 16px 20px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--fg-3);
+}
+
+.rr-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.rr-field-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--fg-3);
+  text-transform: uppercase;
+}
+.rr-field-hint {
+  font-size: 12px;
+  color: var(--fg-4);
+}
+
+.rr-input {
+  width: 100%;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 11px 12px;
+  color: var(--fg);
+  font-family: var(--sans);
+  font-size: 14px;
+}
+.rr-input::placeholder {
+  color: var(--fg-4);
+}
+.rr-input:focus {
+  outline: none;
+  border-color: var(--line-2);
+}
+.rr-input.mono {
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rr-roles {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.rr-role-btn {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--bg-3);
+  color: var(--fg-3);
+  cursor: pointer;
+  border: none;
+  font-weight: 500;
+}
+.rr-role-btn.active {
+  background: #f2f2f0;
+  color: var(--bg);
+  font-weight: 600;
+}
+
+.rr-btn-primary {
+  width: 100%;
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 13px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  margin-top: 4px;
+  font-family: var(--sans);
+}
+.rr-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.rr-link {
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.rr-error {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--bad);
+  background: oklch(0.68 0.2 20 / 0.08);
+  border: 1px solid oklch(0.68 0.2 20 / 0.2);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+/* Show/hide by breakpoint */
+.auth-desktop-only {
+  display: contents;
+}
+.auth-mobile-only {
+  display: none;
+}
+
+/* ── Phone / narrow layout ─────────────────────────────────── */
+@media (max-width: 900px) {
+  .auth-wrap {
+    flex-direction: column;
+  }
+  .auth-marketing {
+    padding: 56px 20px 28px;
+    gap: 26px;
+  }
+  .auth-panel {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--line);
+    padding: 28px 20px 48px;
+  }
+  .rr-card {
+    width: 100%;
+    max-width: 420px;
+  }
+  .auth-hero h1 {
+    font-size: 26px;
+  }
+  .auth-hero p {
+    font-size: 13.5px;
+  }
+  .auth-soon {
+    margin-top: 0;
+  }
+
+  .auth-desktop-only {
+    display: none;
+  }
+  .auth-mobile-only {
+    display: block;
+  }
+}

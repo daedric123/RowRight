@@ -1,0 +1,92 @@
+/* Rowing-eight stroke animation — ported from the DesignCode export.
+   `--dur` (seconds per stroke = 60 / spm) drives every keyframe. */
+
+.eight-loader {
+  width: 100%;
+  max-width: 460px;
+  height: auto;
+  display: block;
+  margin-left: auto;
+}
+
+@keyframes eightOarRotate {
+  0% {
+    transform: rotate(46deg);
+    animation-timing-function: cubic-bezier(0.45, 0, 0.3, 1);
+  }
+  36% {
+    transform: rotate(-32deg);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.55, 1);
+  }
+  100% {
+    transform: rotate(46deg);
+  }
+}
+@keyframes eightBoatSurge {
+  0% {
+    transform: translateX(-2.5px);
+    animation-timing-function: cubic-bezier(0.45, 0, 0.3, 1);
+  }
+  36% {
+    transform: translateX(2px);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.55, 1);
+  }
+  100% {
+    transform: translateX(-2.5px);
+  }
+}
+@keyframes eightWaterFlow {
+  0% {
+    stroke-dashoffset: 0;
+    animation-timing-function: cubic-bezier(0.45, 0, 0.3, 1);
+  }
+  36% {
+    stroke-dashoffset: -52;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.55, 1);
+  }
+  100% {
+    stroke-dashoffset: -72;
+  }
+}
+@keyframes eightBladeOpacity {
+  0% {
+    opacity: 1;
+  }
+  36% {
+    opacity: 1;
+  }
+  44% {
+    opacity: 0.5;
+    animation-timing-function: linear;
+  }
+  92% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.eight-loader .oar {
+  animation: eightOarRotate var(--dur) linear infinite;
+  transform-origin: 0px 0px;
+}
+.eight-loader .blade {
+  animation: eightBladeOpacity var(--dur) linear infinite;
+}
+.eight-loader .boat {
+  animation: eightBoatSurge var(--dur) linear infinite;
+}
+.eight-loader .water {
+  stroke: var(--accent);
+  animation: eightWaterFlow var(--dur) linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eight-loader .oar,
+  .eight-loader .blade,
+  .eight-loader .boat,
+  .eight-loader .water {
+    animation: none;
+  }
+}
