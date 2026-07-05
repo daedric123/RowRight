@@ -325,12 +325,19 @@ const App = () => {
     return null;
   };
 
-  const canvasMouseDown = (e) => {
+  const getPointerXY = (e) => {
     const rect = canvasRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const point = e.touches ? e.touches[0] : e;
+    return { x: point.clientX - rect.left, y: point.clientY - rect.top };
+  };
+
+  const canvasMouseDown = (e) => {
+    const { x, y } = getPointerXY(e);
     const idx = getPointAt(x, y);
-    if (idx !== null) setDraggedPoint(idx);
+    if (idx !== null) {
+      if (e.touches) e.preventDefault();
+      setDraggedPoint(idx);
+    }
   };
 
   const canvasRightClick = (e) => {
@@ -355,9 +362,11 @@ const App = () => {
   useEffect(() => {
     const onMove = (e) => {
       if (draggedPoint === null || !canvasRef.current) return;
+      if (e.touches) e.preventDefault();
       const rect = canvasRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      const point = e.touches ? e.touches[0] : e;
+      const x = point.clientX - rect.left;
+      const y = point.clientY - rect.top;
       const w = rect.width,
         h = rect.height;
       const pad = { t: 16, r: 16, b: 24, l: 36 };
@@ -373,8 +382,8 @@ const App = () => {
       s = Math.max(60, Math.min(180, s));
       const newSplit = secondsToSplit(s);
       setTooltipPos({
-        x: e.clientX,
-        y: e.clientY,
+        x: point.clientX,
+        y: point.clientY,
         visible: true,
         distance: d,
         split: newSplit,
@@ -393,8 +402,12 @@ const App = () => {
     };
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
+    window.addEventListener("touchmove", onMove, { passive: false });
+    window.addEventListener("touchend", onUp);
     return () => {
       window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("touchend", onUp);
       window.removeEventListener("mouseup", onUp);
     };
   }, [draggedPoint, splitPoints]);
@@ -996,8 +1009,9 @@ const App = () => {
                 <canvas
                   ref={canvasRef}
                   onMouseDown={canvasMouseDown}
+                  onTouchStart={canvasMouseDown}
                   onContextMenu={canvasRightClick}
-                  style={{ height: 200 }}
+                  style={{ height: 200, touchAction: "none" }}
                 />
               </div>
               <div className="graph-hint">DRAG POINTS · SHAPE THE PIECE</div>
@@ -1046,7 +1060,10 @@ const App = () => {
                           </div>
                           <input
                             value={p.split}
-                            onChange={(e) => updateSplit(idx, e.target.value)}
+                            inputMode="decimal"
+                            onChange={(e) =>
+                              updateSplit(idx, formatTimeInput(e.target.value))
+                            }
                           />
                           {splitPoints.length > 2 && (
                             <button
